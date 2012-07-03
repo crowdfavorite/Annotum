@@ -342,8 +342,6 @@ class Anno_Template {
 
 			$out .= $card;
 			$authors_data_arr[] = $author_data;
-			// Set authors to sanitized author_data for filter
-		//	$authors[$key] = $author_data;
 		}
 
 		return apply_filters('anno_author_html', $out, $authors_data_arr);
@@ -359,7 +357,7 @@ class Anno_Template {
 		$cache_key = 'anno_citation_html_'.$post_id;
 		
 		/* Do we already have this cached? Let's return that. */
-		$cache = false;//get_transient($cache_key);
+		$cache = get_transient($cache_key);
 		if ($cache !== false && $this->enable_caches !== false) {
 			return $cache;
 		}
