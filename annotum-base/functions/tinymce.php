@@ -237,7 +237,7 @@ add_filter('wp_default_editor', 'anno_force_richedit');
 
 class Anno_tinyMCE {
 	function Anno_tinyMCE() {	
-		add_filter("mce_external_plugins", array(&$this, 'plugins'));
+		add_filter('mce_external_plugins', array(&$this, 'plugins'));
 		add_filter('mce_buttons', array(&$this, 'mce_buttons'));
 		add_filter('mce_buttons_2', array(&$this, 'mce_buttons_2'));
 	}
@@ -285,7 +285,10 @@ class Anno_tinyMCE {
 			
 			$plugins['fullscreen'] = trailingslashit(get_bloginfo('template_directory')).'js/tinymce/plugins/fullscreen/editor_plugin.js';
 
-			$plugins['annoPaste'] = trailingslashit(get_bloginfo('template_directory')).'js/tinymce/plugins/annopaste/editor_plugin.js';		
+			$plugins['annoPaste'] = trailingslashit(get_bloginfo('template_directory')).'js/tinymce/plugins/annopaste/editor_plugin.js';
+
+			$plugins['annoequationedit'] = trailingslashit(get_bloginfo('template_directory')).'js/tinymce/plugins/annoequationedit/editor_plugin.js';
+
 		}
 		return $plugins;
 	}
@@ -729,7 +732,6 @@ function anno_preload_dialogs($init) {
 	<div style="display:none;">
 	<?php anno_popup_tips(); ?>
 	</div>
-	
 <?php
 	}
 }
