@@ -234,8 +234,9 @@ class Anno_PDF_Download {
 	private function fixtags($html) {
 		// Pattern => replacemant
 		$replacements = array(
-			'/(<td.*?>)/i' => '${1}<p>', // Addresses http://code.google.com/p/dompdf/issues/detail?id=238
-			'/(<\/td>)/i' => '</p>${1}',
+			// Match any td or th tags, add block level element
+			'/(<t[dh](?: .*?)?>)/i' => '${1}<p>', // Addresses http://code.google.com/p/dompdf/issues/detail?id=238
+			'/(<\/t[dh]>)/i' => '</p>${1}',
 		);
 
 		foreach ($replacements as $pattern => $replacement) {
