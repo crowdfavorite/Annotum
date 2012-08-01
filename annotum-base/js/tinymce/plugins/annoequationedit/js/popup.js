@@ -1,3 +1,8 @@
+/*
+ * Load data from tinyMCE into the equation edit form
+ * Requires jQuery and Closure TexPane (js/equation-editor-compiled.js)
+ */
+
 var tinymce = null, tinyMCEPopup, tinyMCE, annoEqEdit;
 tinyMCEPopup = {
 	init: function() {
@@ -90,7 +95,8 @@ annoEqEdit = {
 
 	init : function() {
 		var ed = tinyMCEPopup.editor, h;
-
+		// Check if inline or figure
+		this.isFig = this.isFigure();
 		h = document.body.innerHTML;
 		document.body.innerHTML = ed.translate(h);
 		window.setTimeout( function(){annoEqEdit.setup();}, 500 );
@@ -98,11 +104,8 @@ annoEqEdit = {
 	},
 
 	setup : function() {
-		var t = this, el, f = document.forms[0], ed = tinyMCEPopup.editor,
-			dom = tinyMCEPopup.dom, src, ta, regexS, regex, tex;
-
-		document.dir = tinyMCEPopup.editor.getParam('directionality','');
-
+		var t = this, el, form = document.forms[0], ed = tinyMCEPopup.editor,
+			dom = tinyMCEPopup.dom, src, ta, regexS, regex, tex, texPane = new goog.ui.annotum.equation.TexPane(), altEl, descriptionEl, mediaEl;
 
 		tinyMCEPopup.restoreSelection();
 		el = ed.selection.getNode();
@@ -112,27 +115,144 @@ annoEqEdit = {
  
 		url = ed.dom.getAttrib(el, 'src');
 		
-		if (url != null && url.match(/^http(s)?:\/\/chart\.googleapis\.com/)) {
-			ta = t.I('equation');
-
+		if (url !== null && url.match(/^http(s)?:\/\/chart\.googleapis\.com/)) {
 			// Based on code from  http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript
 			regexS = "[\\?&]" + 'chl' + "=([^&#]*)";
 			regex = new RegExp(regexS);
 			tex = regex.exec(url);
-			if (tex == null) {
-				return;
+			texPane.render();
+
+			// Could be done with pure javascript, jQuery is avaialable, might as well utilize it
+			$('.annotum-eq-wrapper').prependTo('#anno-popup-equations .anno-mce-popup-fields');
+			texPane.texEditor.setVisible(!0);
+			texPane.texEditor.setEquation(decodeURIComponent(tex[1]));
+		}
+
+		// Figure specific
+		if (t.isFig) {
+			mediaEl = ed.dom.getNext(el, 'media');
+			if (mediaEl !== undefined) {
+				altEl = mediaEl.getElementsByTagName('alt-text');
+				descriptionEl = mediaEl.getElementsByTagName('long-desc');
+
+				if (altEl !== undefined) {
+					form.alt.value = altEl[0].textContent;
+				}
+				if (descriptionEl !== undefined) {
+					form.description.value = descriptionEl[0].textContent;
+				}
 			}
-			else {
-				ta.value = decodeURIComponent(tex[1]);
-				if (tinyMCE.isIE) {
-					ta.focus();
+
+			// Remove the hidden class
+			form.figuremeta.className = form.figuremeta.className.replace('hidden', '');
+		}
+		
+		// Show the form now its ready and populated with data
+		form.className = form.className.replace('hidden', '');
+		return;
+
+	},
+
+	isFigure : function () {
+		var t = this;
+		var ed = tinyMCEPopup.editor;
+		var el = ed.selection.getNode();
+
+		figure = ed.dom.getParent(el, 'fig');
+		if (figure === null) {
+			return false;
+		}
+
+		return true;
+	},
+
+	update : function() {
+		var t = this;
+		var form = document.forms[0]; // form
+		var ed = tinyMCEPopup.editor;
+		var el; // image in editor
+		var src = $('.ee-preview-container img').prop('src'); // New image source - could be implemented without jQuery, cleaner with it
+		var b;
+
+		// Grab the image
+		tinyMCEPopup.restoreSelection();
+		el = ed.selection.getNode();
+
+		if (el.nodeName != 'IMG') {
+			return;
+		}
+
+		if (src == '') {
+			t.remove();
+			return;
+		}
+
+		// History for undo/redo
+		tinyMCEPopup.execCommand('mceBeginUndoLevel');
+
+		// Update the image itself
+		ed.dom.setAttribs(el, {
+			src : src,
+			'data-mce-src' : src
+		});
+
+		if (t.isFig) {
+			// Update alt and description
+			mediaEl = ed.dom.getNext(el, 'media');
+			if (mediaEl !== undefined) {
+				mediaEl.setAttribute('xlink:href', src);
+
+				altEl = mediaEl.getElementsByTagName('alt-text');
+				descriptionEl = mediaEl.getElementsByTagName('long-desc');
+
+				// Set innerHTML, though the popup edits textContent - no tags allowed in here
+				if (altEl !== undefined) {
+					altEl[0].innerHTML = form.alt.value;
+				}
+				if (descriptionEl !== undefined) {
+					descriptionEl[0].textContent = form.description.value;
 				}
 			}
 		}
 
+		tinyMCEPopup.execCommand('mceEndUndoLevel');
+		ed.execCommand('mceRepaint');
+		tinyMCEPopup.close();
 
 		return;
+	},
 
+	// Remove the image from the dom, remove the figure entirely if the image is removed.
+	remove : function() {
+		var ed = tinyMCEPopup.editor, figureEl, el;
+
+		// History for undo/redo
+		tinyMCEPopup.execCommand('mceBeginUndoLevel');
+
+		tinyMCEPopup.restoreSelection();
+		
+		el = ed.selection.getNode();
+		if (el.nodeName != 'IMG') {
+			return;
+		}
+		
+		tinyMCEPopup.execCommand('mceBeginUndoLevel');
+
+		if (this.isFigure()) {
+			figureEl = ed.dom.getParent(el, 'fig');
+			if (figure !== null) {
+				ed.dom.remove(figureEl);
+			}
+		}
+		else {
+			// Just remove the image
+			ed.dom.remove(el);
+		}
+
+		tinyMCEPopup.execCommand('mceEndUndoLevel');
+		ed.execCommand('mceRepaint');
+		tinyMCEPopup.close();
+		return;
 	}
 
 };
