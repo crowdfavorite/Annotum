@@ -358,7 +358,8 @@ Anno_PDF_Download::i()->add_actions();
  * @param int $id 
  * @return string
  */
-function anno_pdf_download_url($id = null) {
-	return Anno_PDF_Download::i()->get_download_url($id);
+if (!function_exists('anno_pdf_download_url')) {
+	function anno_pdf_download_url($id = null) {
+		return Anno_PDF_Download::i()->get_download_url($id);
+	}
 }
-?>
