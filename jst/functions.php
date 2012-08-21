@@ -1,6 +1,5 @@
 <?php 
 
-
 @define('JST_PATH', trailingslashit(get_stylesheet_directory()));
 @define('JST_URL', trailingslashit(get_stylesheet_directory_uri()));
 @define('JST_VER', '1.0');
