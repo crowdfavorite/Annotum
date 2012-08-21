@@ -1,8 +1,8 @@
 <?php 
 
-@define('JST_PATH', trailingslashit(get_stylesheet_directory()));
 @define('JST_URL', trailingslashit(get_stylesheet_directory_uri()));
 @define('JST_VER', '1.0');
+@define('JST_PATH', trailingslashit(get_stylesheet_directory()));
 
 
 // WP will include this file by default but it needs to be loaded prior to the parent themes versions
