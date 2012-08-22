@@ -1,0 +1,13 @@
+ .recently-container h4 {
+ 	font-weight: normal;
+ 	border-bottom: #C2C2C2 solid 1px;
+ }
+
+ .widget-recent-posts .panel ol {
+ 	padding-bottom: 20px;
+ }
+
+ .widget-recent-posts-categories div.recently-container {
+ 	border-bottom: none;
+ 	padding-bottom: 0;
+ }
